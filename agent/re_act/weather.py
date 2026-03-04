@@ -116,7 +116,7 @@ def run_agent(user_prompt: str):
         return second_response.choices[0].message.content
 
     else:
-        # 如果不需要工具调用，直接返回文本
+        # 如果不需要工具调用3，直接返回文本
         return response_message.content
 
 

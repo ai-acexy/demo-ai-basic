@@ -38,7 +38,7 @@ llm = ChatOpenAI(
     api_key=SecretStr("ollama"),
 )
 
-# 关键步骤：将工具绑定到 LLM 实例
+# 将工具绑定到 LLM 实例
 llm_with_tools = llm.bind_tools(tools)
 
 
