@@ -1,7 +1,10 @@
 ollama~=0.6.1
 openai~=2.24.0
-python-dotenv
-langchain-openai
-langchain-core
-pydantic
-mcp
+python-dotenv~=1.2.2
+langchain-openai~=1.1.10
+langchain-core~=1.2.17
+pydantic~=2.12.5
+mcp~=1.26.0
+langgraph~=1.0.10
+langchain~=1.2.10
+langchain-mcp-adapters~=0.2.1

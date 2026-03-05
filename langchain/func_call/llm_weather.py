@@ -5,7 +5,7 @@ from typing import Annotated
 # 导入 LangChain 核心组件
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage, BaseMessage
+from langchain_core.messages import SystemMessage, HumanMessage, BaseMessage
 from pydantic import SecretStr
 
 import config
