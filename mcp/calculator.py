@@ -20,6 +20,19 @@ def add_numbers(a: float, b: float) -> float:
     return result
 
 
+@mcp.tool()
+def multiply_numbers(a: float, b: float) -> float:
+    """
+    将两个数字相乘并返回结果。
+    参数:
+        a: 第一个加数
+        b: 第二个加数
+    """
+    result = a * b
+    print(f"--- 触发计算: {a} * {b} = {result} ---")  # 这会在服务器终端显示
+    return result
+
+
 if __name__ == "__main__":
     # "stdio":
     #   (Standard Input/Output)

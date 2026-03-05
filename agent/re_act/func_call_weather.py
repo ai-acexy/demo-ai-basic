@@ -22,9 +22,26 @@ client = OpenAI(
 # )
 
 # 2. 定义 Tools 能力 (严格遵循源码结构)
-weather_function: FunctionDefinition = {
+get_current_weather: FunctionDefinition = {
     "name": "get_current_weather",
-    "description": "获取指定地点的实时天气情况",
+    "description": "获取指定地点实时天气情况",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "location": {
+                "type": "string",
+                "description": "一个城市名称，如：Shanghai，首字母大写英文名"
+            }
+        },
+        "required": ["location"],
+        "additionalProperties": False,
+    },
+    "strict": True
+}
+
+get_last_day_weather: FunctionDefinition = {
+    "name": "get_last_day_weather",
+    "description": "获取指定地点昨天天气情况",
     "parameters": {
         "type": "object",
         "properties": {
@@ -42,14 +59,17 @@ weather_function: FunctionDefinition = {
 tools: list[ChatCompletionToolParam] = [
     {
         "type": "function",
-        "function": weather_function
+        "function": get_current_weather
+    },
+    {
+        "type": "function",
+        "function": get_last_day_weather
     }
 ]
 
 
-# 3. 定义模拟的外部工具执行逻辑
 def get_current_weather(location: str):
-    print(f"--- [本地系统] 正在调用天气接口查询: {location} ---")
+    print(f"--- [本地系统] 正在调用当前天气接口查询: {location} ---")
     raw_data = {
         "London": {"temp": 15, "unit": "celsius", "humidity": "80%", "wind": "5km/h"},
         "Beijing": {"temp": 28, "unit": "celsius", "humidity": "40%", "wind": "2km/h"},
@@ -60,7 +80,18 @@ def get_current_weather(location: str):
     return json.dumps(info)
 
 
-# 4. Agent 主逻辑
+def get_last_day_weather(location: str):
+    print(f"--- [本地系统] 正在调用昨天天气接口查询: {location} ---")
+    raw_data = {
+        "London": {"temp": -15, "unit": "celsius", "humidity": "80%", "wind": "5km/h"},
+        "Beijing": {"temp": -28, "unit": "celsius", "humidity": "30%", "wind": "2km/h"},
+    }
+    # 模拟 Map 处理：过滤出核心信息
+    info = raw_data.get(location, {"temp": "未知", "condition": "无数据"})
+    print(f"--- [本地系统] 天气信息: {info} ---")
+    return json.dumps(info)
+
+
 def run_agent(user_prompt: str):
     print(f"用户提问: {user_prompt}")
 
@@ -72,6 +103,8 @@ def run_agent(user_prompt: str):
         ),
         ChatCompletionUserMessageParam(role="user", content=user_prompt)
     ]
+
+    print(f"已注入所有tools {json.dumps(tools)}")
     # 第一步：初次请求，让 LLM 决定是否调用工具
     response = client.chat.completions.create(
         model=MODEL_NAME,
@@ -106,6 +139,16 @@ def run_agent(user_prompt: str):
                     "content": obs_content,
                 }
                 messages.append(tool_msg)
+            elif function_name == "get_last_day_weather":
+                # 执行真实函数
+                obs_content = get_last_day_weather(location=function_args.get("location"))
+                # 构造 Tool 角色消息并标注类型
+                tool_msg: ChatCompletionToolMessageParam = {
+                    "tool_call_id": tool_call.id,
+                    "role": "tool",
+                    "content": obs_content,
+                }
+                messages.append(tool_msg)
 
         # 第三步：把执行结果塞回给 LLM，获取最终回复
         print(">> 结果已返回，LLM 正在组织语言...")
@@ -123,7 +166,9 @@ def run_agent(user_prompt: str):
 # 测试执行
 if __name__ == "__main__":
     try:
-        final_answer = run_agent("北京现在天气怎么样？")
+        # final_answer = run_agent("北京现在天气怎么样？")
+        # final_answer = run_agent("北京昨天天气怎么样？")
+        final_answer = run_agent("北京昨天和今天的天气各是怎么样？")
         # final_answer = run_agent("中国国土面积多大？")
         print(f"\nAI: {final_answer}")
     except Exception as e:

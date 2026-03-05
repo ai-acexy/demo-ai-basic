@@ -4,16 +4,13 @@ from mcp.client.stdio import stdio_client
 
 
 async def run_calculator_agent():
-    # 1. 告诉 Agent 如何启动你的 MCP Server
-    # command: 使用哪个解释器
-    # args: 运行哪个文件（请确保路径正确）
     server_params = StdioServerParameters(
         command="python",
-        args=["mcp/demo/sum.py"]
+        args=["../calculator.py"]
     )
 
     # 2. 建立 stdio 管道连接
-    # 这步会自动在后台拉起一个新的 python 进程运行你的 sum.py
+    # 这步会自动在后台拉起一个新的 python 进程运行你的 calculator.py
     async with stdio_client(server_params) as (read, write):
         # 3. 初始化会话
         async with ClientSession(read, write) as session:
@@ -25,7 +22,8 @@ async def run_calculator_agent():
             tools = await session.list_tools()
             print(f"--- Agent 扫描到的工具列表 ---")
             for tool in tools.tools:
-                print(f"发现工具: {tool.name} - {tool.description}")
+                print(f"发现工具: {tool.name}")
+                print(f"    作用: {tool.description}")
 
             # -------------------------------------------------------
             # 步骤 B: 调用阶段 (大模型根据需求决定使用哪个工具)
@@ -35,7 +33,7 @@ async def run_calculator_agent():
             # 模拟大模型提取了用户需求（比如 10 + 20）并封装成 JSON 发送
             result = await session.call_tool(
                 "add_numbers",
-                arguments={"a": 10.0, "b": 20.0}
+                arguments={"a": 1.33, "b": 21.1}
             )
 
             # -------------------------------------------------------
