@@ -9,6 +9,8 @@ from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
+import config
+
 
 # 建议使用绝对路径防止子进程启动失败
 def get_abs_path(relative_path):
@@ -32,7 +34,7 @@ async def run_langchain_mcp_react():
 
     # 2. 初始化 LLM
     llm = ChatOpenAI(
-        model="qwen3.5:2b",
+        model=config.OLLAMA_MODEL,
         base_url="http://localhost:11434/v1",
         api_key=SecretStr("ollama"),
         temperature=0  # ReAct 模式建议设为 0，增加推理稳定性
@@ -53,11 +55,7 @@ async def run_langchain_mcp_react():
         agent = create_agent(
             llm,
             tools,
-            system_prompt=(
-                "你是一个具有 ReAct 推理能力的助手。"
-                "当你遇到需要计算或查询天气的问题时，请拆解步骤：先查询，再计算。"
-                "请给出最终简洁的回答，不要反问用户。"
-            )
+            system_prompt=config.SYS_PROMPT
         )
 
         query = "北京和伦敦现在的温度总和是多少？昨天的温度相加是多少，另外把这个昨天的温度总和乘以今天的温度总和"
