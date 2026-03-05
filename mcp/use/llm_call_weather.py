@@ -9,12 +9,12 @@ from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMe
 
 import config
 
-MODEL_NAME = "qwen2.5:7b"
+MODEL_NAME = "qwen3.5:2b"
 openai_client = OpenAI(base_url="http://127.0.0.1:11434/v1", api_key="ollama")
 
 
 # MODEL_NAME = "gpt-5-nano-2025-08-07"
-# openai_client = OpenAI(api_key=config.get_env("OPEN_AI_API_KEY"), )
+# openai_client = OpenAI(api_key=config.get_env("OPEN_AI_API_KEY"))
 
 
 async def run_mcp_agent(user_prompt: str):
@@ -63,7 +63,8 @@ async def run_mcp_agent(user_prompt: str):
                 for tool_call in tool_calls:
                     # 5. 调用 MCP Server 执行逻辑 (选择与执行阶段)
                     # 注意：这里不再是 local_func()，而是 mcp_session.call_tool()
-                    print(f">> LLM 发起 MCP Call name: {tool_call.function.name} args: {tool_call.function.arguments} ... ")
+                    print(
+                        f">> LLM 发起 MCP Call name: {tool_call.function.name} args: {tool_call.function.arguments} ... ")
                     mcp_result = await mcp_session.call_tool(
                         tool_call.function.name,
                         arguments=json.loads(tool_call.function.arguments)
@@ -88,7 +89,7 @@ async def run_mcp_agent(user_prompt: str):
 if __name__ == "__main__":
     # result = asyncio.run(run_mcp_agent("伦敦昨天天气怎么样？"))
     # result = asyncio.run(run_mcp_agent("北京当前天气怎么样？"))
-    # result = asyncio.run(run_mcp_agent("北京近两天天气如何？"))
-    result = asyncio.run(run_mcp_agent("中国国土面积多大？"))
+    result = asyncio.run(run_mcp_agent("北京近昨天和现在的天气如何？"))
+    # result = asyncio.run(run_mcp_agent("中国国土面积多大？"))
 
     print(f"\nAI: {result}")

@@ -30,7 +30,7 @@ def get_last_day_weather(location: str) -> str:
     print(f"--- [get_current_weather] 收到查询请求: {location} ---")
     raw_data = {
         "London": {"temp": -15, "unit": "celsius", "humidity": "80%", "wind": "5km/h"},
-        "Beijing": {"temp": -28, "unit": "celsius", "humidity": "40%", "wind": "2km/h"},
+        "Beijing": {"temp": -28, "unit": "celsius", "humidity": "30%", "wind": "21km/h"},
     }
     info = raw_data.get(location, {"temp": "未知", "condition": "无数据"})
     return json.dumps(info)

@@ -3,21 +3,22 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 
+# 展示 MCP 计算器
+
 async def run_calculator_agent():
     server_params = StdioServerParameters(
         command="python",
         args=["../calculator.py"]
     )
 
-    # 2. 建立 stdio 管道连接
-    # 这步会自动在后台拉起一个新的 python 进程运行你的 calculator.py
+    # 这步会自动在后台拉起一个新的 python 进程运行 calculator.py
     async with stdio_client(server_params) as (read, write):
         # 3. 初始化会话
         async with ClientSession(read, write) as session:
             await session.initialize()
 
             # -------------------------------------------------------
-            # 步骤 A: 发现阶段 (大模型会先看你有什么本事)
+            # 步骤 A: 发现能力
             # -------------------------------------------------------
             tools = await session.list_tools()
             print(f"--- Agent 扫描到的工具列表 ---")
@@ -26,7 +27,7 @@ async def run_calculator_agent():
                 print(f"    作用: {tool.description}")
 
             # -------------------------------------------------------
-            # 步骤 B: 调用阶段 (大模型根据需求决定使用哪个工具)
+            # 步骤 B: 调用能力
             # -------------------------------------------------------
             print(f"\n--- Agent 正在执行加法指令 ---")
 

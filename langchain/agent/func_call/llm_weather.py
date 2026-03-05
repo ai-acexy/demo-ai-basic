@@ -11,7 +11,6 @@ from pydantic import SecretStr
 import config
 
 
-# 1. 定义工具 (使用 @tool 装饰器)
 # LangChain 会自动解析函数名、注释和参数类型作为 LLM 的 Tool Schema
 @tool
 def get_current_weather(location: Annotated[str, "城市英文名，例如 'Beijing' 或 'London'"]):
@@ -27,13 +26,26 @@ def get_current_weather(location: Annotated[str, "城市英文名，例如 'Beij
     return json.dumps(info)
 
 
+@tool
+def get_last_day_weather(location: Annotated[str, "城市英文名，例如 'Beijing' 或 'London'"]):
+    # 下面这段代码是tool的描述，不可以删除。langchain底层通过反射获取装配tool的描述
+    """获取指定地点的昨天天气情况。"""
+    print(f"--- [本地系统] 正在调用天气接口查询: {location} ---")
+    raw_data = {
+        "London": {"temp": 11, "unit": "celsius", "humidity": "84%", "wind": "35km/h"},
+        "Beijing": {"temp": 23, "unit": "celsius", "humidity": "10%", "wind": "21km/h"},
+    }
+    info = raw_data.get(location, {"temp": "未知", "condition": "无数据"})
+    print(f"--- [本地系统] 天气信息: {info} ---")
+    return json.dumps(info)
+
+
 # 定义工具列表
-tools = [get_current_weather]
+tools = [get_current_weather, get_last_day_weather]
 
 # 2. 初始化模型并绑定工具
-# 这里依然对接你的本地 Ollama
 llm = ChatOpenAI(
-    model="qwen2.5:7b",
+    model="qwen3.5:2b",
     base_url="http://127.0.0.1:11434/v1",
     api_key=SecretStr("ollama"),
 )
@@ -44,7 +56,7 @@ llm_with_tools = llm.bind_tools(tools)
 
 # 3. Agent 主逻辑
 def run_langchain_agent(user_prompt: str):
-    print(f"用户提问: {user_prompt}")
+    print(f"Q: {user_prompt}")
 
     # 使用 LangChain 的 Message 对象
     messages: list[BaseMessage] = [
@@ -54,6 +66,8 @@ def run_langchain_agent(user_prompt: str):
 
     # 第一轮请求：LLM 决定是否调用工具
     ai_msg = llm_with_tools.invoke(messages)
+    print(f">> LLM 响应: {ai_msg}")
+
     messages.append(ai_msg)
 
     # 检查是否有 tool_calls
@@ -76,7 +90,7 @@ def run_langchain_agent(user_prompt: str):
             messages.append(tool_output_msg)
 
         # 第三步：将工具结果喂回 LLM，获取最终总结
-        print(">> 结果已返回，LLM 正在组织语言...")
+        print(">> Tool Call Finish，LLM 正在组织语言...")
         final_response = llm_with_tools.invoke(messages)
         return final_response.content
 
@@ -87,7 +101,8 @@ def run_langchain_agent(user_prompt: str):
 if __name__ == "__main__":
     try:
         # answer = run_langchain_agent("世界上最大的国家？")
-        answer = run_langchain_agent("北京现在天气怎么样？")
+        # answer = run_langchain_agent("北京现在天气怎么样？")
+        answer = run_langchain_agent("伦敦昨天和现在天气怎么样？")
         print(f"\nAI: {answer}")
     except Exception as e:
         print(f"\n运行出错: {e}")

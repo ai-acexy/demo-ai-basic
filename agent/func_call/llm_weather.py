@@ -10,7 +10,7 @@ from openai.types.chat import (
 )
 from openai.types.shared_params import FunctionDefinition
 
-MODEL_NAME = "qwen2.5:7b"
+MODEL_NAME = "qwen3.5:2b"
 client = OpenAI(
     base_url="http://127.0.0.1:11434/v1",
     api_key="ollama"
@@ -83,8 +83,8 @@ def get_current_weather(location: str):
 def get_last_day_weather(location: str):
     print(f"--- [本地系统] 正在调用昨天天气接口查询: {location} ---")
     raw_data = {
-        "London": {"temp": -15, "unit": "celsius", "humidity": "80%", "wind": "5km/h"},
-        "Beijing": {"temp": -28, "unit": "celsius", "humidity": "30%", "wind": "2km/h"},
+        "London": {"temp": -14, "unit": "celsius", "humidity": "80%", "wind": "5km/h"},
+        "Beijing": {"temp": 26, "unit": "celsius", "humidity": "30%", "wind": "2km/h"},
     }
     # 模拟 Map 处理：过滤出核心信息
     info = raw_data.get(location, {"temp": "未知", "condition": "无数据"})
@@ -93,9 +93,8 @@ def get_last_day_weather(location: str):
 
 
 def run_agent(user_prompt: str):
-    print(f"用户提问: {user_prompt}")
+    print(f"Q: {user_prompt}")
 
-    # 显式标注类型，消除 PyCharm 对 messages 列表的黄色警告
     messages: list[ChatCompletionMessageParam] = [
         ChatCompletionSystemMessageParam(
             role="system",
@@ -105,7 +104,6 @@ def run_agent(user_prompt: str):
     ]
 
     print(f"已注入所有tools {json.dumps(tools)}")
-    # 第一步：初次请求，让 LLM 决定是否调用工具
     response = client.chat.completions.create(
         model=MODEL_NAME,
         messages=messages,
@@ -113,15 +111,14 @@ def run_agent(user_prompt: str):
         tool_choice="auto"
     )
 
+    print(f">> LLM 响应: {response}")
     response_message = response.choices[0].message
     tool_calls = response_message.tool_calls
 
     # 第二步：检查是否需要调用工具
     if tool_calls:
         print(">> LLM 决定发起 Tool Call...")
-
         # 把 AI 产生的包含 tool_calls 的 message 放入历史
-        print(response_message.model_dump(exclude_none=True))
         messages.append(response_message.model_dump(exclude_none=True))
 
         for tool_call in tool_calls:
@@ -131,6 +128,7 @@ def run_agent(user_prompt: str):
             if function_name == "get_current_weather":
                 # 执行真实函数
                 obs_content = get_current_weather(location=function_args.get("location"))
+                print(f">> 函数执行结果: {obs_content}")
 
                 # 构造 Tool 角色消息并标注类型
                 tool_msg: ChatCompletionToolMessageParam = {
@@ -142,6 +140,8 @@ def run_agent(user_prompt: str):
             elif function_name == "get_last_day_weather":
                 # 执行真实函数
                 obs_content = get_last_day_weather(location=function_args.get("location"))
+                print(f">> 函数执行结果: {obs_content}")
+
                 # 构造 Tool 角色消息并标注类型
                 tool_msg: ChatCompletionToolMessageParam = {
                     "tool_call_id": tool_call.id,
@@ -151,13 +151,13 @@ def run_agent(user_prompt: str):
                 messages.append(tool_msg)
 
         # 第三步：把执行结果塞回给 LLM，获取最终回复
-        print(">> 结果已返回，LLM 正在组织语言...")
+        print(">> Tool Call Finish，LLM 正在组织语言...")
         second_response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=messages,
         )
+        print(f">> LLM 响应: {second_response}")
         return second_response.choices[0].message.content
-
     else:
         # 如果不需要工具调用3，直接返回文本
         return response_message.content
