@@ -17,7 +17,7 @@ set_debug(True)
 set_verbose(True)
 
 llm = ChatOpenAI(
-    model="qwen3.5:2b",
+    model=config.OLLAMA_MODEL,
     base_url="http://localhost:11434/v1",
     api_key=SecretStr("ollama")
 )
@@ -63,7 +63,7 @@ async def run(prompt):
         agent = create_agent(
             llm,
             tools,
-            system_prompt="一个助手，简洁明了的回复，可提供适量建议，但是不反问用户问题"
+            system_prompt=config.SYS_PROMPT
         )
 
         print(f"Q: {prompt}")

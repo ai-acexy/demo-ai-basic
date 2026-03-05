@@ -9,6 +9,8 @@ from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
+import config
+
 # Tool-Use Router —— 工具路由
 # 最轻量级的结构，LLM 仅作为“智能分流器”。
 #
@@ -44,7 +46,7 @@ def get_last_day_weather(location: Annotated[str, "城市英文名，例如 'Bei
 tools = [get_current_weather, get_last_day_weather]
 
 llm = ChatOpenAI(
-    model="qwen3.5:2b",
+    model=config.OLLAMA_MODEL,
     base_url="http://127.0.0.1:11434/v1",
     api_key=SecretStr("ollama"),
 )
@@ -52,7 +54,7 @@ llm = ChatOpenAI(
 agent = create_agent(
     llm,
     tools,
-    system_prompt="一个助手，简洁明了的回复，可提供适量建议，但是不反问用户问题"
+    system_prompt=config.SYS_PROMPT
 )
 
 user_prompt = "伦敦昨天和现在天气怎么样？"

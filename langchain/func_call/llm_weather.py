@@ -45,7 +45,7 @@ tools = [get_current_weather, get_last_day_weather]
 
 # 2. 初始化模型并绑定工具
 llm = ChatOpenAI(
-    model="qwen3.5:2b",
+    model=config.OLLAMA_MODEL,
     base_url="http://127.0.0.1:11434/v1",
     api_key=SecretStr("ollama"),
 )
@@ -60,7 +60,7 @@ def run_langchain_agent(user_prompt: str):
 
     # 使用 LangChain 的 Message 对象
     messages: list[BaseMessage] = [
-        SystemMessage(content="一个助手，简洁明了的回复，可提供适量建议，但是不反问用户问题"),
+        SystemMessage(content=config.SYS_PROMPT),
         HumanMessage(content=user_prompt)
     ]
 

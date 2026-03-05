@@ -7,7 +7,9 @@ from openai import OpenAI
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolParam, ChatCompletionUserMessageParam, \
-    ChatCompletionToolMessageParam
+    ChatCompletionToolMessageParam, ChatCompletionSystemMessageParam
+
+import config
 
 # 展示mcp聚合
 # 模式 单轮并行调用 (Parallel Tool Calling) 或者 单次决策模式
@@ -17,7 +19,7 @@ MCP_CONFIGS = [
     {"name": "calculator", "command": "python", "args": ["../calculator.py"]},
 ]
 
-MODEL_NAME = "qwen3.5:2b"
+MODEL_NAME = config.OLLAMA_MODEL
 openai_client = OpenAI(base_url="http://127.0.0.1:11434/v1", api_key="ollama")
 
 
@@ -30,8 +32,8 @@ async def run_aggregator_agent(user_prompt: str):
         tool_to_session: Dict[str, ClientSession] = {}
         all_openai_tools: List[ChatCompletionToolParam] = []
 
-        for config in MCP_CONFIGS:
-            params = StdioServerParameters(command=config["command"], args=config["args"])
+        for c in MCP_CONFIGS:
+            params = StdioServerParameters(command=c["command"], args=c["args"])
 
             # 启动并注册到 stack，确保退出时自动关闭进程
             read, write = await stack.enter_async_context(stdio_client(params))
@@ -54,6 +56,7 @@ async def run_aggregator_agent(user_prompt: str):
         print(f">> 已加载 {len(all_openai_tools)} 个工具。")
 
         messages: List[ChatCompletionMessageParam] = [
+            ChatCompletionSystemMessageParam(role="system", content=config.SYS_PROMPT),
             ChatCompletionUserMessageParam(role="user", content=user_prompt)
         ]
 

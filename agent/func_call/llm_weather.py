@@ -10,7 +10,7 @@ from openai.types.chat import (
 )
 from openai.types.shared_params import FunctionDefinition
 
-MODEL_NAME = "qwen3.5:2b"
+MODEL_NAME = config.OLLAMA_MODEL
 client = OpenAI(
     base_url="http://127.0.0.1:11434/v1",
     api_key="ollama"
@@ -98,7 +98,7 @@ def run_agent(user_prompt: str):
     messages: list[ChatCompletionMessageParam] = [
         ChatCompletionSystemMessageParam(
             role="system",
-            content="一个助手，简洁明了的回复，可提供适量建议，但是不反问用户问题"
+            content=config.SYS_PROMPT
         ),
         ChatCompletionUserMessageParam(role="user", content=user_prompt)
     ]

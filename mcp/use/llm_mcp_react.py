@@ -10,7 +10,7 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
     ChatCompletionToolParam,
     ChatCompletionUserMessageParam,
-    ChatCompletionToolMessageParam
+    ChatCompletionToolMessageParam, ChatCompletionSystemMessageParam
 )
 
 import config
@@ -54,7 +54,13 @@ async def run_react_agent(user_prompt: str):
         print(f">> 已加载 {len(all_openai_tools)} 个工具。")
 
         # --- 2. 核心 ReAct 循环逻辑 ---
-        messages: List[ChatCompletionMessageParam] = [ChatCompletionUserMessageParam(role="user", content=user_prompt)]
+        messages: List[ChatCompletionMessageParam] = [
+            ChatCompletionSystemMessageParam(
+                role="system",
+                content="你是一个助手，你需要根据用户的指令，调用工具来完成任务。"
+            ),
+            ChatCompletionUserMessageParam(role="user", content=user_prompt)
+        ]
 
         max_steps = 10  # 防止死循环
         step = 0
@@ -105,7 +111,7 @@ async def run_react_agent(user_prompt: str):
 
 if __name__ == "__main__":
     try:
-        query = "北京和伦敦现在的温度总和是多少？昨天的温度相加是多少，另外把这个结果再相乘"
+        query = "北京和伦敦现在的温度总和是多少？昨天的温度相加是多少，另外把这个昨天的温度总和*今天的温度总和"
         ans = asyncio.run(run_react_agent(query))
         print(f"\nAI: {ans}")
     except Exception as e:

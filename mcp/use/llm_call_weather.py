@@ -9,7 +9,7 @@ from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMe
 
 import config
 
-MODEL_NAME = "qwen3.5:2b"
+MODEL_NAME = config.OLLAMA_MODEL
 openai_client = OpenAI(base_url="http://127.0.0.1:11434/v1", api_key="ollama")
 
 
@@ -42,7 +42,7 @@ async def run_mcp_agent(user_prompt: str):
                 })
 
             messages: list[ChatCompletionMessageParam] = [
-                ChatCompletionSystemMessageParam(role="system", content="一个助手，简洁回复，不反问用户。"),
+                ChatCompletionSystemMessageParam(role="system", content=config.SYS_PROMPT),
                 ChatCompletionUserMessageParam(role="user", content=user_prompt)
             ]
             print(f"已注入所有tools {json.dumps(tools)}")
