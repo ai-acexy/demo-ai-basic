@@ -27,7 +27,7 @@ openai_client = OpenAI(base_url="http://127.0.0.1:11434/v1", api_key="ollama")
 # MODEL_NAME = "gpt-5-nano-2025-08-07"
 # openai_client = OpenAI(api_key=config.get_env("OPEN_AI_API_KEY"))
 
-async def run_react_agent(user_prompt: str):
+async def run(user_prompt: str):
     async with AsyncExitStack() as stack:
         tool_to_session: Dict[str, ClientSession] = {}
         all_openai_tools: List[ChatCompletionToolParam] = []
@@ -112,7 +112,7 @@ async def run_react_agent(user_prompt: str):
 if __name__ == "__main__":
     try:
         query = "北京和伦敦现在的温度总和是多少？昨天的温度相加是多少，另外把这个昨天的温度总和*今天的温度总和"
-        ans = asyncio.run(run_react_agent(query))
+        ans = asyncio.run(run(query))
         print(f"\nAI: {ans}")
     except Exception as e:
         print(f"\n运行异常: {e}")

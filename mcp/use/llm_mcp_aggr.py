@@ -27,7 +27,7 @@ openai_client = OpenAI(base_url="http://127.0.0.1:11434/v1", api_key="ollama")
 # openai_client = OpenAI(api_key=config.get_env("OPEN_AI_API_KEY"))
 
 
-async def run_aggregator_agent(user_prompt: str):
+async def run(user_prompt: str):
     async with AsyncExitStack() as stack:
         tool_to_session: Dict[str, ClientSession] = {}
         all_openai_tools: List[ChatCompletionToolParam] = []
@@ -99,7 +99,7 @@ async def run_aggregator_agent(user_prompt: str):
 
 if __name__ == "__main__":
     try:
-        ans = asyncio.run(run_aggregator_agent("北京天气如何？顺便告诉我 23+46=多少"))
+        ans = asyncio.run(run("北京天气如何？顺便告诉我 23+46=多少"))
         print(f"\nAI: {ans}")
     except Exception as e:
         print(f"\n运行异常: {e}")

@@ -17,7 +17,7 @@ openai_client = OpenAI(base_url="http://127.0.0.1:11434/v1", api_key="ollama")
 # openai_client = OpenAI(api_key=config.get_env("OPEN_AI_API_KEY"))
 
 
-async def run_mcp_agent(user_prompt: str):
+async def run(user_prompt: str):
     # 1. 定义如何连接到你的 MCP Server
     server_params = StdioServerParameters(
         command="python",
@@ -89,7 +89,7 @@ async def run_mcp_agent(user_prompt: str):
 if __name__ == "__main__":
     # result = asyncio.run(run_mcp_agent("伦敦昨天天气怎么样？"))
     # result = asyncio.run(run_mcp_agent("北京当前天气怎么样？"))
-    result = asyncio.run(run_mcp_agent("北京近昨天和现在的天气如何？"))
+    result = asyncio.run(run("北京近昨天和现在的天气如何？"))
     # result = asyncio.run(run_mcp_agent("中国国土面积多大？"))
 
     print(f"\nAI: {result}")
