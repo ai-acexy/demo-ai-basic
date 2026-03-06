@@ -2,11 +2,10 @@
 import json
 from typing import Annotated
 
-# 导入 LangChain 核心组件
-from langchain_openai import ChatOpenAI
-from langchain_core.tools import tool
 from langchain_core.messages import SystemMessage, HumanMessage, BaseMessage
-from pydantic import SecretStr
+from langchain_core.tools import tool
+# 导入 LangChain 核心组件
+from langchain_ollama import ChatOllama
 
 import config
 
@@ -40,21 +39,16 @@ def get_last_day_weather(location: Annotated[str, "城市英文名，例如 'Bei
     return json.dumps(info)
 
 
-# 定义工具列表
 tools = [get_current_weather, get_last_day_weather]
 
-# 2. 初始化模型并绑定工具
-llm = ChatOpenAI(
+llm = ChatOllama(
     model=config.OLLAMA_MODEL,
-    base_url="http://127.0.0.1:11434/v1",
-    api_key=SecretStr("ollama"),
 )
 
 # 将工具绑定到 LLM 实例
 llm_with_tools = llm.bind_tools(tools)
 
 
-# 3. Agent 主逻辑
 def run_langchain_agent(user_prompt: str):
     print(f"Q: {user_prompt}")
 

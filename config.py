@@ -12,8 +12,14 @@ def get_env(key: str, default=None) -> str:
     return os.getenv(key, default)
 
 
+def openai_key() -> str:
+    return get_env("OPEN_AI_API_KEY")
+
+
 if __name__ == '__main__':
     print(get_env("OPEN_AI_API_KEY"))
 
-SYS_PROMPT = "一个助手，简洁明了的回复，可提供适量建议，但是不反问用户问题"
+SYS_PROMPT = "一个助手，简洁明了的回复，可提供适量建议，不引导用户持续提问"
+
 OLLAMA_MODEL = "qwen3.5:2b"
+OPENAI_MODEL = "gpt-5-nano-2025-08-07"

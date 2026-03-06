@@ -7,6 +7,7 @@ from langchain.agents import create_agent
 from langchain_core.globals import set_debug, set_verbose
 from langchain_core.messages import HumanMessage
 from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
@@ -16,10 +17,8 @@ import config
 set_debug(True)
 set_verbose(True)
 
-llm = ChatOpenAI(
+llm = ChatOllama(
     model=config.OLLAMA_MODEL,
-    base_url="http://localhost:11434/v1",
-    api_key=SecretStr("ollama")
 )
 
 

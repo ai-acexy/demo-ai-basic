@@ -6,7 +6,7 @@ from langchain.agents import create_agent
 from langchain_core.globals import set_debug, set_verbose
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
+from langchain_ollama import ChatOllama
 from pydantic import SecretStr
 
 import config
@@ -45,10 +45,8 @@ def get_last_day_weather(location: Annotated[str, "城市英文名，例如 'Bei
 
 tools = [get_current_weather, get_last_day_weather]
 
-llm = ChatOpenAI(
+llm = ChatOllama(
     model=config.OLLAMA_MODEL,
-    base_url="http://127.0.0.1:11434/v1",
-    api_key=SecretStr("ollama"),
 )
 
 agent = create_agent(

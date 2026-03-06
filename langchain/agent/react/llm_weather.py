@@ -4,12 +4,25 @@ import os
 from typing import Any, cast
 
 from langchain.agents import create_agent
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_openai import ChatOpenAI
+from langchain_ollama import ChatOllama
+
 from pydantic import SecretStr
 
 import config
+
+llm = ChatOllama(
+    model=config.OLLAMA_MODEL,
+    temperature=0  # ReAct 模式建议设为 0，增加推理稳定性
+)
+
+# llm = ChatOpenAI(
+#     model=config.OPENAI_MODEL,
+#     temperature=0,
+#     api_key=SecretStr(config.openai_key()),
+# )
 
 
 # 建议使用绝对路径防止子进程启动失败
@@ -32,14 +45,6 @@ async def run_langchain_mcp_react():
         }
     }
 
-    # 2. 初始化 LLM
-    llm = ChatOpenAI(
-        model=config.OLLAMA_MODEL,
-        base_url="http://localhost:11434/v1",
-        api_key=SecretStr("ollama"),
-        temperature=0  # ReAct 模式建议设为 0，增加推理稳定性
-    )
-
     # 3. 使用适配器管理 MCP 连接
     # 它替代了你手动写的 AsyncExitStack 和 ClientSession 初始化逻辑
     client = MultiServerMCPClient(mcp_configs)
@@ -55,20 +60,20 @@ async def run_langchain_mcp_react():
         agent = create_agent(
             llm,
             tools,
-            system_prompt=config.SYS_PROMPT
+            # system_prompt=SystemMessage(content=config.SYS_PROMPT)
         )
-
-        query = "北京和伦敦现在的温度总和是多少？昨天的温度相加是多少，另外把这个昨天的温度总和乘以今天的温度总和"
+        query = "北京和伦敦现在的温度总和是多少？昨天的温度相加是多少，另外把这个昨天的温度总和乘以今天的温度总和，分析这个温度相乘有什么意义吗"
         print(f"\nQ: {query}")
 
-        # 5. 执行推理循环
-        # 注意：这里我们使用 astream 模式，这样你可以看到类似你手动代码里的 Step 过程
-        inputs = {"messages": [HumanMessage(content=query)]}
+        # 使用 astream 模式
+        inputs = {"messages": [
+            SystemMessage(content=config.SYS_PROMPT),
+            HumanMessage(content=query)
+        ]}
 
         # 使用 cast(Any, ...) 解决 PyCharm 警告
         async for chunk in agent.astream(cast(Any, inputs), stream_mode="values"):
             latest_message = chunk["messages"][-1]
-            # 漂亮的打印出每一轮的思考或工具执行结果
             latest_message.pretty_print()
 
     except Exception as e:
