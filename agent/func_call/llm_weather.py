@@ -16,9 +16,9 @@ client = OpenAI(
     api_key="ollama"
 )
 
-# MODEL_NAME = "gpt-5-nano-2025-08-07"
+# MODEL_NAME = config.OPENAI_MODEL
 # client = OpenAI(
-#     api_key=config.get_env("OPEN_AI_API_KEY"),
+#     api_key=config.openai_key(),
 # )
 
 # 2. 定义 Tools 能力 (严格遵循源码结构)

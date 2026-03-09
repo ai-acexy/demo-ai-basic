@@ -23,8 +23,8 @@ llm = ChatOllama(
 
 
 # llm = ChatOpenAI(
-#     model="gpt-5-nano-2025-08-07",
-#     api_key=SecretStr(config.get_env("OPEN_AI_API_KEY"))
+#     model=config.OPENAI_MODEL,
+#     api_key=SecretStr(config.openai_key())
 # )
 
 

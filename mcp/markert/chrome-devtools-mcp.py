@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import json
+from time import sleep
+
 from openai import OpenAI
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -18,7 +20,7 @@ openai_client = OpenAI(api_key=config.openai_key())
 async def run(user_prompt: str):
     server_params = StdioServerParameters(
         command="npx",
-        args=["chrome-devtools-mcp@latest", "--no-performance-crux"]
+        args=["chrome-devtools-mcp@latest", "--no-performance-crux", "--no-usage-statistics"]
     )
 
     async with stdio_client(server_params) as (read, write):
@@ -106,7 +108,7 @@ if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
-        result = loop.run_until_complete(run("打开google.com搜索关于伊朗战争的信息，然后汇总一下给我"))
+        result = loop.run_until_complete(run("打开google.com 搜索关于最近美国以色列与伊朗战争的信息，然后汇总一下给我"))
         print(f"\nAI: {result}")
     finally:
         # 显式关闭循环前，先处理所有待处理的任务
