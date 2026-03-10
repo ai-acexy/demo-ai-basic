@@ -6,13 +6,9 @@ from mcp.client.stdio import stdio_client
 
 
 async def main():
-    settings: dict[str, str] = {
-        "SEARXNG_URL": "http://127.0.0.1:8080"
-    }
     server_params = StdioServerParameters(
         command="npx",
-        args=["-y", "mcp-searxng"],
-        env=settings
+        args=["-y", "mcp-fetch-server"],
     )
 
     async with stdio_client(server_params) as (read, write):
@@ -20,10 +16,9 @@ async def main():
             await session.initialize()
             mcp_tools = await session.list_tools()
             print(f"MCP Server 列表: {mcp_tools.tools}")
-            result = await session.call_tool("searxng_web_search", arguments={
-                "query": "美国以色列与伊朗战争的最新情况 最新",
-                "language": "en",
-                "time_range": "day"
+            result = await session.call_tool("fetch_html", arguments={
+                "url": "https://www.news.cn/world/20260309/21be941e49884795a80dd33f3e3d71a3/c.html",
+                "proxy": "http://localhost:7890"
             })
 
             for content in result.content:
