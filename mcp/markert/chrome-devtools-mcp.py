@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import json
-from time import sleep
 
-from openai import OpenAI
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from openai import OpenAI
 from openai.types.chat import (
     ChatCompletionMessageParam,
     ChatCompletionToolParam,
     ChatCompletionToolMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 )
+
 import config
 
 MODEL_NAME = config.OPENAI_MODEL
