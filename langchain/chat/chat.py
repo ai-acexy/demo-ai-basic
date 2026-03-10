@@ -23,26 +23,10 @@ async def run_langchain_translate():
         HumanMessage(content=user_content)
     ]
     print("-------- 开始回复 --------")
-    thinking_started = False
-    content_started = False
-    async for chunk in llm.astream(messages):
-        reasoning = chunk.additional_kwargs.get("reasoning_content", "")
-        if reasoning:
-            if not thinking_started:
-                print(">>>>>>>> 思考过程 >>>>>>>>")
-                thinking_started = True
-            print(reasoning, end="", flush=True)
-            continue
-        # 提取最终回复内容
-        if chunk.content:
-            if not content_started:
-                if thinking_started:
-                    print("\n>>>>>>>> 思考完成 >>>>>>>>\n")
-                print("########### 回复内容 ###########")
-                content_started = True
-            print(chunk.content, end="", flush=True)
 
-    print("\n-------- 回复结束 --------")
+    # 非流式回复
+    response = await llm.ainvoke(messages)
+    print(response.content)
 
 
 if __name__ == "__main__":
