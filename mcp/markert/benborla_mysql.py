@@ -18,9 +18,17 @@ openai_client = OpenAI(api_key=config.openai_key())
 
 
 async def run(user_prompt: str):
+    settings: dict[str, str] = {
+        "MYSQL_HOST": config.get_env("MYSQL_HOST"),
+        "MYSQL_PORT": config.get_env("MYSQL_PORT"),
+        "MYSQL_USER": config.get_env("MYSQL_USER"),
+        "MYSQL_PASS": config.get_env("MYSQL_PASS"),
+        "MYSQL_DB": config.get_env("MYSQL_DB"),
+    }
     server_params = StdioServerParameters(
         command="npx",
-        args=["chrome-devtools-mcp@latest", "--no-performance-crux", "--no-usage-statistics"]
+        args=["@benborla29/mcp-server-mysql@latest"],
+        env=settings
     )
 
     async with stdio_client(server_params) as (read, write):
@@ -28,7 +36,6 @@ async def run(user_prompt: str):
             await mcp_session.initialize()
             mcp_tools_resp = await mcp_session.list_tools()
 
-            # 2. 准备工具列表
             tools: list[ChatCompletionToolParam] = []
             for tool in mcp_tools_resp.tools:
                 tools.append({
@@ -43,7 +50,38 @@ async def run(user_prompt: str):
             # 3. 初始化对话历史
             messages: list[ChatCompletionMessageParam] = [
                 ChatCompletionSystemMessageParam(role="system",
-                                                 content="你是一个浏览器助手。你可以分多步操作：先导航到网页，查看内容，再提取信息。如果信息不足，请继续调用工具。"),
+                                                 content="你是一个数据库管理员，通过理解用户输入，自动查询相关表的数据返回给用户,如果用户的要求和操作数据库无关，则直接拒绝。"
+                                                         "注意你永远只允许执行select查询相关的权限不允许做任何修改，一旦你发现包含修改要求，你需要直接拒绝。"
+                                                         """create table nxgoal_sit.user
+(
+    id          bigint unsigned auto_increment
+        primary key,
+    created_at  datetime     default CURRENT_TIMESTAMP not null,
+    modified_at datetime     default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
+    email       varchar(200)                           null comment '邮箱',
+    shop_email  varchar(200)                           null comment '购物邮箱',
+    nickname    varchar(255)                           null comment '昵称',
+    avatar      varchar(255)                           null comment '头像',
+    followers   int unsigned default '0'               null comment '粉丝数',
+    following   int unsigned default '0'               null comment '关注数',
+    likes       int unsigned default '0'               null comment '全站发布内容被点赞数',
+    bio         varchar(255)                           null comment '个人介绍',
+    cover       varchar(255)                           null comment '个人背景封面',
+    password    varchar(255)                           null comment '密码',
+    channel     varchar(10)  default 'email'           null comment '账户创建渠道',
+    status      int          default 1                 null comment '账号状态 1正常 2-禁用',
+    constraint uk_email
+        unique (email),
+    constraint check_followers
+        check (`followers` >= 0),
+    constraint check_following
+        check (`following` >= 0),
+    constraint check_likes
+        check (`likes` >= 0)
+)
+    comment '用户表';
+
+"""),
                 ChatCompletionUserMessageParam(role="user", content=user_prompt)
             ]
 
@@ -76,13 +114,10 @@ async def run(user_prompt: str):
                     try:
                         mcp_result = await mcp_session.call_tool(func_name, arguments=func_args)
                         print(f">> MCP 返回: {mcp_result}")
-                        # 处理 MCP 返回的内容块
-                        # 注意：chrome-devtools-mcp 有时返回 content[0].text，有时可能为空
                         obs_content = ""
                         if mcp_result.content:
                             obs_content = mcp_result.content[0].text
 
-                        # 构造回复给大模型的消息
                         tool_msg: ChatCompletionToolMessageParam = {
                             "tool_call_id": tool_call.id,
                             "role": "tool",
@@ -98,7 +133,6 @@ async def run(user_prompt: str):
                             content=f"Error: {str(e)}"
                         ))
 
-                # 循环会继续回到顶部，将最新的历史发给大模型，让它“思考”下一步
                 print(">> 观察结果已收录，等待大模型下一步决策...")
 
             return "已达到最大步数限制，任务未完成。"
@@ -106,7 +140,7 @@ async def run(user_prompt: str):
 
 if __name__ == "__main__":
     try:
-        result = asyncio.run(run("请查看Termius这个软件最新的Changelog"))
+        result = asyncio.run(run("帮我查看用户表的最新一条数据"))
         print(f"\nAI: {result}")
     except KeyboardInterrupt:
         pass
