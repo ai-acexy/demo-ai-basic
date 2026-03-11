@@ -13,8 +13,10 @@ from openai.types.chat import (
 
 import config
 
-MODEL_NAME = config.OPENAI_MODEL
-openai_client = OpenAI(api_key=config.openai_key())
+# MODEL_NAME = config.OPENAI_MODEL
+# openai_client = OpenAI(api_key=config.openai_key())
+MODEL_NAME = config.OLLAMA_MODEL
+openai_client = OpenAI(base_url="http://localhost:11434/v1", api_key="")
 
 
 async def run(user_prompt: str):
@@ -47,12 +49,11 @@ async def run(user_prompt: str):
                     }
                 })
 
-            # 3. 初始化对话历史
-            messages: list[ChatCompletionMessageParam] = [
-                ChatCompletionSystemMessageParam(role="system",
-                                                 content="你是一个数据库管理员，通过理解用户输入，自动查询相关表的数据返回给用户,如果用户的要求和操作数据库无关，则直接拒绝。"
-                                                         "注意你永远只允许执行select查询相关的权限不允许做任何修改，一旦你发现包含修改要求，你需要直接拒绝。"
-                                                         """create table nxgoal_sit.user
+            prompt = """
+            你是一个数据库管理员，通过理解用户输入，自动查询相关表的数据返回给用户,如果用户的要求和操作数据库无关，则直接拒绝。注意你永远只允许执行select查询相关的权限不允许做任何修改，一旦你发现包含修改要求，你需要直接拒绝。
+            
+            当前表结构
+            create table user
 (
     id          bigint unsigned auto_increment
         primary key,
@@ -80,8 +81,12 @@ async def run(user_prompt: str):
         check (`likes` >= 0)
 )
     comment '用户表';
+            """
 
-"""),
+            # 3. 初始化对话历史
+            messages: list[ChatCompletionMessageParam] = [
+                ChatCompletionSystemMessageParam(role="system",
+                                                 content=prompt),
                 ChatCompletionUserMessageParam(role="user", content=user_prompt)
             ]
 
