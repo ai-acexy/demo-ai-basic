@@ -105,12 +105,10 @@ async def run(user_prompt: str):
 
 
 if __name__ == "__main__":
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     try:
-        result = loop.run_until_complete(run("打开google.com 搜索关于最近美国以色列与伊朗战争的信息，然后汇总一下给我"))
+        result = asyncio.run(run("请查看Termius这个软件最新的Changelog"))
         print(f"\nAI: {result}")
-    finally:
-        # 显式关闭循环前，先处理所有待处理的任务
-        loop.run_until_complete(loop.shutdown_asyncgens())
-        loop.close()
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        print(f"发生意外错误: {e}")
