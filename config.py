@@ -26,4 +26,4 @@ if __name__ == '__main__':
 SYS_PROMPT = "一个助手，简洁明了的回复，可提供适量建议，不引导用户持续提问"
 
 OLLAMA_MODEL = "qwen3.5:2b"
-OPENAI_MODEL = "gpt-5-nano-2025-08-07"
+OPENAI_MODEL = "gpt-5.4-2026-03-05"
