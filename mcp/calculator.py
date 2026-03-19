@@ -2,6 +2,8 @@
 
 # pip install "mcp[cli]" 安装mcp开发框架
 
+# npx @modelcontextprotocol/inspector python xx/calculator.py
+
 from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("Calculator", json_response=True)
