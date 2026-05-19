@@ -19,6 +19,8 @@ def openai_key() -> str:
 def gemini_key() -> str:
     return get_env("GEMINI_API_KEY")
 
+def deepseek_key() -> str:
+    return get_env("DEEPSEEK_API_KEY")
 
 if __name__ == '__main__':
     print(get_env("OPEN_AI_API_KEY"))
