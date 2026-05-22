@@ -26,11 +26,11 @@ openai_client = OpenAI(
 SCREENSHOT_DIR = os.path.abspath(os.path.join(os.getcwd(), "screenshots"))
 
 SYSTEM_PROMPT = (
-    "你是一个浏览器截图执行器，只处理单次任务。"
+    "你是一个浏览器截图执行器."
     "根据用户的自然语言描述，先打开目标网站，再定位用户指定的页面元素，"
     "优先使用 take_screenshot_of_element 对元素区域截图。"
     "如果用户一次提供多个元素位置，请按顺序逐个处理，确保每个元素都独立截图且不遗漏。"
-    "截图文件必须保存到当前工作目录下的 screenshots 目录，且使用绝对路径。"
+    "截图文件必须保存到当前工作目录下的 ./screenshots 目录"
     "如果用户只描述了页面局部区域，则合理推断并完成截图。"
 )
 
@@ -190,7 +190,8 @@ async def main(user_prompt: str):
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main('打https://www.allscores.io/match/5188760/lineups/lokomotiv-plovdiv-vs-cska-sofia 将class="bg-bg-color-2 border border-border-level-2 rounded-[var(--page-card-radius)] p-page-card-padding p-0! overflow-hidden" 这个区域截图下来'))
+        asyncio.run(main(
+            '打https://www.allscores.io/match/5188760/lineups/lokomotiv-plovdiv-vs-cska-sofia 将class="bg-bg-color-2 border border-border-level-2 rounded-[var(--page-card-radius)] p-page-card-padding p-0! overflow-hidden" 这个区域截图下来'))
     except KeyboardInterrupt:
         pass
     except Exception as e:
